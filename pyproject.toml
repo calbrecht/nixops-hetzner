@@ -8,7 +8,7 @@ include = [ "nixops_hetzner/nix/*.nix" ]
 
 [tool.poetry.dependencies]
 python = "^3.7"
-nixops = { git = "https://github.com/nixos/nixops.git", rev = "master" }
+nixops = { git = "https://github.com/NixOS/nixops.git", rev = "bc67d704f12a55f9708f66613698263a37964a36" }
 hetzner = "0.8.2"
 
 [tool.poetry.dev-dependencies]
