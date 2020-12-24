@@ -256,9 +256,11 @@ class HetznerState(MachineState):
             os.path.dirname(__file__)
             + "../../../../../../share/nix/nixops-hetzner/hetzner-bootstrap.nix"
         )
-        bootstrap_out = subprocess.check_output(
-            ["nix-build", expr, "--no-out-link"]
-        ).rstrip()
+        bootstrap_out = (
+            subprocess.check_output(["nix-build", expr, "--no-out-link"])
+            .rstrip()
+            .decode("utf-8")
+        )
         bootstrap = os.path.join(bootstrap_out, "bin/hetzner-bootstrap")
         self.log_end(f"done. ({bootstrap})")
 
