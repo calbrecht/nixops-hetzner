@@ -90,8 +90,8 @@ typing-extensions = "^3.7.4"
 [package.source]
 type = "git"
 url = "https://github.com/NixOS/nixops.git"
-reference = "bc67d704f12a55f9708f66613698263a37964a36"
-resolved_reference = "bc67d704f12a55f9708f66613698263a37964a36"
+reference = "10413544c0676b66e3687e844b6ff88bfcba8438"
+resolved_reference = "10413544c0676b66e3687e844b6ff88bfcba8438"
 
 [[package]]
 name = "nose"
@@ -190,7 +190,7 @@ testing = ["pytest (>=3.5,!=3.7.3)", "pytest-checkdocs (>=1.2.3)", "pytest-flake
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "d825042d91a4bef7689bcb6050e79e3d4cf260e03c43177c569b190a91eed2c5"
+content-hash = "f419bc15bee3d6d6e2691ab1ecd74a8ff31ddcacf65142f046c8de389f13cc30"
 
 [metadata.files]
 appdirs = [

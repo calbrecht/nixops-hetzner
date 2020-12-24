@@ -10,8 +10,7 @@ from typing import Optional
 from hetzner.robot import Robot
 
 from nixops import known_hosts
-from nixops.util import wait_for_tcp_port, ping_tcp_port
-from nixops.util import attr_property, create_key_pair
+from nixops.util import attr_property, create_key_pair, wait_for_success
 from nixops.ssh_util import SSHCommandFailed
 from nixops.backends import MachineDefinition, MachineState
 from nixops.nix_expr import nix2py
@@ -199,7 +198,7 @@ class HetznerState(MachineState):
             ]
         )
 
-    def _wait_for_rescue(self, ip):
+    def _wait_for_rescue(self):
         if not TEST_MODE:
             # In test mode, the target machine really doesn't go down at all,
             # so only wait for the reboot to finish when deploying real
@@ -209,9 +208,9 @@ class HetznerState(MachineState):
             def dotlog():
                 self.log_continue(".")
 
-            wait_for_tcp_port(ip, 22, open=False, callback=dotlog)
+            self.wait_for_down(callback=dotlog)
             self.log_continue("[down]")
-            wait_for_tcp_port(ip, 22, callback=dotlog)
+            self.wait_for_up(callback=dotlog)
             self.log_end("[up]")
         self.state = self.RESCUE
 
@@ -407,7 +406,7 @@ class HetznerState(MachineState):
             else:
                 self.run_command("systemctl reboot", check=False)
         self.log_end("done.")
-        self._wait_for_rescue(self.main_ipv4)
+        self._wait_for_rescue()
         self.rescue_passwd = rescue_passwd
         self.state = self.RESCUE
         self.ssh.reset()
@@ -747,7 +746,7 @@ class HetznerState(MachineState):
         def dotlog():
             self.log_continue(".")  # NOQA
 
-        wait_for_tcp_port(self.main_ipv4, 22, open=False, callback=dotlog)
+        self.wait_for_down(callback=dotlog)
         self.log_continue("[down]")
 
         self.state = self.STOPPED
@@ -781,7 +780,7 @@ class HetznerState(MachineState):
             return
 
         if self.state in (self.STOPPED, self.STOPPING):
-            res.is_up = ping_tcp_port(self.main_ipv4, 22)
+            res.is_up = wait_for_success(self.ping, timeout=1)
             if not res.is_up:
                 self.state = self.STOPPED
                 res.is_reachable = False
