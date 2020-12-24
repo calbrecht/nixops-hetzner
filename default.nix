@@ -1,4 +1,4 @@
-{ pkgs ? import <nixpkgs> { overlays = import ./overlays.nix; } }:
+{ pkgs ? import <nixpkgs> { } }:
 let
   overrides = import ./overrides.nix { inherit pkgs; };
 in
