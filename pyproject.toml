@@ -14,6 +14,7 @@ hetzner = "0.8.2"
 [tool.poetry.dev-dependencies]
 nose = "^1"
 black = "19.10b0"
+mypy = "^0.790"
 
 [tool.poetry.plugins."nixops"]
 hetzner = "nixops_hetzner.plugin"
