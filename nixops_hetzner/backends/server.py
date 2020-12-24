@@ -247,8 +247,10 @@ class HetznerState(MachineState):
     def _bootstrap_rescue(self, install: bool, partitions):
         """
         Bootstrap everything needed in order to get Nix and the partitioner
-        usable in the rescue system. The keyword arguments are only for
-        partitioning, see reboot_rescue() for description, if not given we will
+        usable in the rescue system.
+
+        On installation, both 'installed' has to be set to True and partitions
+        should contain a Kickstart configuration, if not given we will
         only mount based on information provided in self.partitions.
         """
         self.log_start("building Nix bootstrap installer... ")
@@ -337,7 +339,8 @@ class HetznerState(MachineState):
                 # Exit code 100 is when the partitioner requires a reboot.
                 if failed_command.exitcode == 100:
                     self.log(failed_command.message)
-                    self.reboot_rescue(install, partitions)
+                    self.reboot_rescue(hard=(self.state not in (self.UP, self.RESCUE)))
+                    self._bootstrap_rescue(True, partitions)
                     return
                 else:
                     raise
@@ -380,17 +383,9 @@ class HetznerState(MachineState):
         else:
             MachineState.reboot(self, hard=hard)
 
-    def reboot_rescue(
-        self, install=False, partitions=None, bootstrap: bool = True, hard: bool = False
-    ) -> None:
+    def reboot_rescue(self, hard: bool = False) -> None:
         """
-        Use the Robot to activate the rescue system and reboot the system. By
-        default, only mount partitions and do not partition or wipe anything.
-
-        On installation, both 'installed' has to be set to True and partitions
-        should contain a Kickstart configuration, otherwise it's read from
-        self.partitions if available (which it shouldn't if you're not doing
-        something nasty).
+        Use the Robot to activate the rescue system and reboot the system.
         """
         self.log(
             f"rebooting machine ‘{self.name}’ ({self.main_ipv4}) into rescue system"
@@ -398,7 +393,7 @@ class HetznerState(MachineState):
         server = self._get_server_by_ip(self.main_ipv4)
         server.rescue.activate()
         rescue_passwd = server.rescue.password
-        if hard or (install and self.state not in (self.UP, self.RESCUE)):
+        if hard:
             self.log_start("sending hard reset to robot... ")
             server.reboot("hard")
         else:
@@ -412,8 +407,6 @@ class HetznerState(MachineState):
         self.rescue_passwd = rescue_passwd
         self.state = self.RESCUE
         self.ssh.reset()
-        if bootstrap:
-            self._bootstrap_rescue(install, partitions)
 
     def _install_base_system(self):
         self.log_start("creating missing directories... ")
@@ -710,7 +703,8 @@ class HetznerState(MachineState):
 
         if not self.vm_id:
             self.log("installing machine...")
-            self.reboot_rescue(install=True, partitions=defn.partitions)
+            self.reboot_rescue(hard=(self.state not in (self.UP, self.RESCUE)))
+            self._bootstrap_rescue(True, defn.partitions)
             self._install_base_system()
             self._detect_hardware()
             server = self._get_server_by_ip(self.main_ipv4)
@@ -807,7 +801,8 @@ class HetznerState(MachineState):
 
     def _destroy(self, server, wipe):
         if self.state != self.RESCUE:
-            self.reboot_rescue(bootstrap=False, hard=True)
+            self.reboot_rescue(hard=True)
+            self._bootstrap_rescue(False, None)
         if wipe:
             self.log_start("erasing all data on disk... ")
             # Let it run in the background because it will take a long time.
