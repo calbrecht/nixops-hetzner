@@ -7,12 +7,13 @@ import struct
 import subprocess
 from typing import Optional
 
-from hetzner.robot import Robot
+# No type stubs for hetzner.robot
+from hetzner.robot import Robot  # type: ignore
 
-from nixops import known_hosts
 from nixops.util import attr_property, create_key_pair, wait_for_success
 from nixops.ssh_util import SSHCommandFailed
-from nixops.backends import MachineDefinition, MachineState
+from nixops.resources import ResourceOptions
+from nixops.backends import MachineDefinition, MachineOptions, MachineState
 from nixops.nix_expr import nix2py
 
 # This is set to True by tests/hetzner-backend.nix. If it's in effect, no
@@ -42,22 +43,36 @@ class TestModeServer(object):
         password = "abcd1234"
 
 
+class HetznerOptions(ResourceOptions):
+    mainIPv4: str
+    createSubAccount: Optional[bool]
+    robotUser: Optional[str]
+    robotPass: Optional[str]
+    partitions: Optional[str]
+
+
+class HetznerMachineOptions(MachineOptions):
+    hetzner: HetznerOptions
+
+
 class HetznerDefinition(MachineDefinition):
     """
     Definition of a Hetzner machine.
     """
 
+    config: HetznerMachineOptions
+
     @classmethod
     def get_type(cls):
         return "hetzner"
 
-    def __init__(self, xml, config):
+    def __init__(self, name, config):
         super().__init__(name, config)
-        self.main_ipv4 = config["mainIPv4"]
-        self.create_sub_account = config["createSubAccount"]
-        self.robot_user = config["robotUser"]
-        self.robot_pass = config["robotPass"]
-        self.partitions = config["partitions"]
+        self.main_ipv4 = self.config.hetzner.mainIPv4
+        self.create_sub_account = self.config.hetzner.createSubAccount
+        self.robot_user = self.config.hetzner.robotUser
+        self.robot_pass = self.config.hetzner.robotPass
+        self.partitions = self.config.hetzner.partitions
 
 
 class HetznerState(MachineState):
@@ -711,9 +726,10 @@ class HetznerState(MachineState):
             vm_id = f"nixops-{self.depl.uuid}-{self.name}"
             server.set_name(vm_id[:100])
             self.vm_id = vm_id
-            known_hosts.remove(self.main_ipv4, None)
+            # FIXME this is useless unless we know the public_host_key
+            # known_hosts.remove(self.main_ipv4, self.public_host_key)
             self.just_installed = True
-            self.state_version = defn.config["nixosRelease"]
+            self.state_version = defn.config.nixosRelease
 
     def start(self):
         """
