@@ -52,7 +52,7 @@ class HetznerDefinition(MachineDefinition):
         return "hetzner"
 
     def __init__(self, xml, config):
-        super().__init__(name,config)
+        super().__init__(name, config)
         self.main_ipv4 = config["mainIPv4"]
         self.create_sub_account = config["createSubAccount"]
         self.robot_user = config["robotUser"]
