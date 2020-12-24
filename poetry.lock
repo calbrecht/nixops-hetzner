@@ -98,7 +98,7 @@ python-versions = "*"
 
 [[package]]
 name = "nixops"
-version = "1.8.0"
+version = "2.0.0"
 description = "NixOS cloud provisioning and deployment tool"
 category = "main"
 optional = false
@@ -114,8 +114,8 @@ typing-extensions = "^3.7.4"
 [package.source]
 type = "git"
 url = "https://github.com/NixOS/nixops.git"
-reference = "10413544c0676b66e3687e844b6ff88bfcba8438"
-resolved_reference = "10413544c0676b66e3687e844b6ff88bfcba8438"
+reference = "faed0635d24e93f38046af58fb7715327de28e39"
+resolved_reference = "faed0635d24e93f38046af58fb7715327de28e39"
 
 [[package]]
 name = "nose"
@@ -214,7 +214,7 @@ testing = ["pytest (>=3.5,!=3.7.3)", "pytest-checkdocs (>=1.2.3)", "pytest-flake
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "4d28ac2c5fd03063b1cac3d5ae733b80ca4ceac545a6505229fc2d9b4e37787f"
+content-hash = "1cc25941d31ff1c439773706f13e9e1e941b71e51f61c767e1cb6142806e9091"
 
 [metadata.files]
 appdirs = [
